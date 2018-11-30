@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Chef Orders
+{% endblock %}
+
+{% block header %}
+
+    <!-- when user orders chef's food, chef gets notified -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+{% endblock %}
+
+{% block main %}
+
+    <!-- head of table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Customer</th>
+                <th scope="col">Meal</th>
+                <th scope="col">Calories</th>
+                <th scope="col">Customer Latitude</th>
+                <th scope="col">Customer Longitude</th>
+                <th scope="col">Time</th>
+                <th scope="col">Price</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+
+        <!-- body of table -->
+        <tbody>
+            {% for info in data %}
+                <tr>
+                    <!-- customer -->
+                    <td>{{ info.customer }}</td>
+
+                    <!-- meal -->
+                    <td>{{ info.meal }}</td>
+
+                    <!-- calories -->
+                    <td>{{ info.calories }}</td>
+
+                    <!-- latitude -->
+                    <td>{{ info.latitude }}</td>
+
+                    <!-- longitude -->
+                    <td>{{ info.longitude }}</td>
+
+                    <!-- time -->
+                    <td>{{ info.time }}</td>
+
+                    <!-- price -->
+                    <td>{{ '{0:.2f}'.format(info.price) }}</td>
+
+                    <!-- total -->
+                    <td>{{ '{0:.2f}'.format((info.price)*(info.shares)) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+        <!-- footer of table -->
+        <tfoot>
+            <tr>
+                <td colspan="0">CASH</td>
+                <td colspan="3"></td>
+                <td>{{ liquid }}</td>
+            </tr>
+            <tr>
+                <td colspan="4"></td>
+                <td><strong>{{ TOTAL }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+{% endblock %}
