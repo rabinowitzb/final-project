@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Chef Orders
+{% endblock %}
+
+{% block header %}
+
+    <!-- when user adds money flash message -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+{% endblock %}
+
+{% block main %}
+
+    <button class="btn btn-primary" type="submit">Add $50</button>
+
+    <!-- head of table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <td colspan="0">CASH</td>
+                <td colspan="1"></td>
+                <td>{{ liquid }}</td>
+            </tr>
+            <tr>
+                <th scope="col">Meal</th>
+                <th scope="col">Calories</th>
+                <th scope="col">Price</th>
+            </tr>
+        </thead>
+
+        <!-- body of table -->
+        <tbody>
+            {% for info in data %}
+                <tr>
+                    <!-- image of meal -->
+                    <td>{{ info.image }}</td>
+
+                    <!-- meal -->
+                    <td>{{ info.meal }}</td>
+
+                    <!-- calories -->
+                    <td>{{ info.calories }}</td>
+
+                    <!-- price -->
+                    <td>{{ '{0:.2f}'.format(info.price) }}</td>
+
+                    <!-- add to cart -->
+                    <td><button class="btn btn-primary" type="submit">Add to Cart</button></td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
