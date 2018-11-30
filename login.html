@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+    <form action="/login" method="post">
+        <header>
+            <p>
+                <center>
+                    <!-- image of founders -->
+                    <img src = "" class = "img-fluid" alt = "Responsive image"/>
+                </center>
+            </p>
+            <p>
+                <center>
+                    Founders<i>Gabe Apoj and Ben Rabinowitz</i>
+                </center>
+            </p>
+            <p>
+            <!-- synopsis of HAMBRE -->
+            Founded in 2018, HAMBRE provides customized Kosher meal solutions to customers worldwide. We tailor our menu to specific diets and preferences. We look forward to connecting you with your chef. Enjoy!
+            </p>
+        </header>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Log In</button>
+    </form>
+{% endblock %}
