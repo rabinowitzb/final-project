@@ -204,13 +204,9 @@ def register():
         username = request.form.get("username")
         mealplan = request.form.get("mealplan")
         cash = request.form.get("cash")
-        geolocation = request.form.get("geolocation")
 
         if not cash:
             return apology("Please enter the amount of cash ")
-
-        if not geolocation:
-            return apology("Missing geolocation!")
 
         if not username:
             return apology("Missing username!")
@@ -226,11 +222,11 @@ def register():
 
         hash = generate_password_hash(password)
 
-        longitude = geolocation[0]
-        latitude = geolocation[1]
+        # longitude = geolocation[0]
+        # latitude = geolocation[1]
 
-        result = db.execute("INSERT INTO customers (username , name, password, longitude, latitude, cash, mealplan) VALUES (:username , :name, :password, :longitude, :latitude, cash, mealplan)",
-                            username=username, name=name, password=hash, longitude=longitude, latitude=latitude)
+        result = db.execute("INSERT INTO customers (username , name, password, cash, mealplan) VALUES (:username , :name, :password, :cash, mealplan)",
+                            username=username, name=name, password=hash, cash= cash, mealplan=mealplan)
 
         if not result:
             return apology("Database already has that username")
@@ -273,7 +269,8 @@ def register():
 
 
         hash = generate_password_hash(password)
-        result = db.execute("INSERT INTO chefs (username , name, password, longitude, latitude) VALUES (:username , :name, :password, :longitude, :latitude)", username=username, name=name, password=hash, longitude=longitude, latitude=latitude)
+        result = db.execute("INSERT INTO chefs (username , name, password, longitude, latitude) VALUES (:username , :name, :password, :longitude, :latitude)",
+                            username=username, name=name, password=hash)
 
         if not result:
             return apology("Database already has that username")
