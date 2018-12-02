@@ -11,14 +11,14 @@
   <div class="form-row">
     <div class="col-md-4 mb-3">
       <label for="validationCustom01">First name, Last name</label>
-      <input type="text" class="form-control" id="validationCustom01" placeholder="First name" required>
+      <input type="text" class="form-control" id="validationCustom01" name="name" placeholder="name" required>
       <div class="valid-feedback">
         Valid
       </div>
     <div class="col-md-4 mb-3">
       <label for="validationCustomUsername">Username</label>
       <div class="input-group">
-        <input type="text" class="form-control" id="validationCustomUsername" placeholder="Username" aria-describedby="inputGroupPrepend" required>
+        <input type="text" class="form-control" id="validationCustomUsername" name="username" placeholder="Username" aria-describedby="inputGroupPrepend" required>
         <div class="invalid-feedback">
           Please choose a username.
         </div>
@@ -28,14 +28,14 @@
   <div class="form-row">
     <div class="col-md-6 mb-3">
       <label for="validationCustom03">Password</label>
-      <input type="text" class="form-control" id="validationCustom03" placeholder="Password" required>
+      <input type="text" class="form-control" id="validationCustom03" name="password" placeholder="Password" required>
       <div class="invalid-feedback">
         Please choose a password.
       </div>
     </div>
     <div class="col-md-3 mb-3">
       <label for="validationCustom04">Email</label>
-      <input type="text" class="form-control" id="validationCustom04" placeholder="Email" required>
+      <input type="text" class="form-control" id="validationCustom04" name="email" placeholder="Email" required>
       <div class="invalid-feedback">
         Please input an email.
       </div>
@@ -44,7 +44,7 @@
   </div>
   <div class="form-group">
     <div class="form-check">
-      <input class="form-check-input"  type="hidden" name="registration" id="registration" value="" required>
+      <input class="form-check-input"  type="hidden" name="geolocation" id="geolocation" value="" required>
       <button href="#" onclick="starter()">
       <label class="form-check-label" for="invalidCheck">
         Agree to share location
@@ -54,7 +54,7 @@
       </div>
     </div>
   </div>
-  <button class="btn btn-primary" type="submit" required> Register</button>
+  <button class="btn btn-primary" type="submit" required>Register</button>
 
 </form>
 
