@@ -1,10 +1,11 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Portfolio
+    Customer Cart
 {% endblock %}
 
 {% block header %}
+    <form action="/checkout" method="post">
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -25,55 +26,47 @@
         <thead>
             <tr>
                 <th scope="col">Meal</th>
+                <th scope="col">Chef</th>
                 <th scope="col">Calories</th>
-                <th scope="col">Latitude</th>
-                <th scope="col">Longitude</th>
                 <th scope="col">Time</th>
                 <th scope="col">Price</th>
-                <th scope="col">Total</th>
             </tr>
         </thead>
 
         <!-- body of table -->
         <tbody>
-            {% for info in data %}
+            {% for info in datas %}
                 <tr>
                     <!-- meal -->
                     <td>{{ info.meal }}</td>
 
+                    <!-- chef -->
+                    <!--<td>{{ info.chef }}</td>-->
+
                     <!-- calories -->
                     <td>{{ info.calories }}</td>
 
-                    <!-- latitude -->
-                    <td>{{ info.latitude }}</td>
-
-                    <!-- longitude -->
-                    <td>{{ info.longitude }}</td>
-
                     <!-- time -->
-                    <td>{{ info.time }}</td>
+                    <!--<td>{{ info.time }}</td>-->
 
                     <!-- price -->
-                    <td>{{ '{0:.2f}'.format(info.price) }}</td>
-
-                    <!-- total -->
-                    <td>{{ '{0:.2f}'.format((info.price)*(info.shares)) }}</td>
+                    <td>{{ info.price }}</td>
                 </tr>
             {% endfor %}
         </tbody>
-
-        <!-- footer of table -->
         <tfoot>
+            <!-- total -->
             <tr>
-                <td colspan="0">CASH</td>
-                <td colspan="3"></td>
-                <td>{{ liquid }}</td>
-            </tr>
-            <tr>
-                <td colspan="4"></td>
-                <td><strong>{{ TOTAL }}</strong></td>
+                <td colspan="0"><b>TOTAL</b></td>
+                <!--<td colspan="4"></td>-->
+                <!--<td>{{ cart }}</td>-->
             </tr>
         </tfoot>
     </table>
+
+    <!-- checkout -->
+    <center>
+        <button class="btn btn-primary" type="submit">Checkout</button>
+    </center>
 
 {% endblock %}
