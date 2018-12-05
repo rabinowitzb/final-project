@@ -48,6 +48,9 @@ db = SQL("sqlite:///hambre.db")
 # make global list
 all_rows =[]
 
+# make list into which we put names of meals ordered
+orderedmeals = []
+
 @app.route("/")
 def index():
     """Direct to appropriate page"""
@@ -81,13 +84,13 @@ def mealsuggestions():
     times = int(times)
 
     # check time for breakfast
-    if times > 800 and times < 1200:
+    if times > 600 and times < 1200:
 
         # declare meals
         mealtype = "breakfast"
 
     # check time for lunch
-    if times >= 1200 and times < 1700:
+    elif times >= 1200 and times < 1700:
 
         # declare meals
         mealtype = "lunch"
@@ -165,12 +168,12 @@ def buy():
                 # append into orderedmeals
                 orderedmeals.append(mealdetails)
 
-                # for loop for all meals
-                for food in range(len(orderedmeals)):
+        # for loop for all meals
+        for food in range(len(orderedmeals)):
 
-                    # insert row into cart table
-                    ID = db.execute("INSERT INTO customerscart (id, meal, calories, price) VALUES (:user_id, :meal, :calories, :price)",
-                                    user_id=current_user, meal=orderedmeals[food][0]['name'], calories=orderedmeals[food][0]['calories'], price=orderedmeals[food][0]['price'])
+            # insert row into cart table
+            db.execute("INSERT INTO customerscart (id, meal, calories, price) VALUES (:user_id, :meal, :calories, :price)",
+                                user_id=current_user, meal=orderedmeals[food][0]['name'], calories=orderedmeals[food][0]['calories'], price=orderedmeals[food][0]['price'])
 
         # as long as orderedmeals is positive
         if len(orderedmeals) > 0:
@@ -189,9 +192,6 @@ def checkout():
 
     # define current user
     current_user = session["user_id"]
-
-    # make list into which we put names of meals clicked
-    orderedmeals = []
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -252,9 +252,9 @@ def checkout():
                 # flash message
                 flash('Bought!')
 
-    # clear cart
-    db.execute("DELETE FROM customerscart WHERE id=:user_id",
-               user_id=current_user)
+        # clear cart
+        db.execute("DELETE FROM customerscart WHERE id=:user_id",
+                   user_id=current_user)
 
     # render ordered template
     return render_template("ordered.html", data=orderedmeals)
@@ -457,7 +457,7 @@ def customerregister():
         mealplan = request.form.get("mealplan")
 
         # define timezone
-        timezone = request.form.get("timezone")
+        timezones = request.form.get("timezone")
 
         # define creditcard
         creditcard = request.form.get("creditcard")
@@ -501,8 +501,12 @@ def customerregister():
         # hash password
         hash_password = generate_password_hash(request.form.get("password"), method='pbkdf2:sha256', salt_length=8)
 
+        # hash creditcard
+        hash_creditcard = generate_password_hash(request.form.get("creditcard"), method='pbkdf2:sha256', salt_length=8)
+
+
         # set timezone
-        tz = pytz.timezone('US/Eastern')
+        tz = pytz.timezone(timezones)
         localtime = datetime.now(tz).strftime('%H:%M')
 
 
@@ -514,7 +518,7 @@ def customerregister():
 
         # stores username into database
         result = db.execute("INSERT INTO customers (username, name, password, creditcard, mealplan, customerlat, customerlong, timestamp) VALUES (:username, :name, :password, :creditcard, :mealplan, :customerlat, :customerlong, :timestamp)",
-                            username=username, name=name, password=hash_password, creditcard=creditcard, mealplan=mealplan, customerlat=latitude, customerlong=longitude, timestamp=localtime)
+                            username=username, name=name, password=hash_password, creditcard=hash_creditcard, mealplan=mealplan, customerlat=latitude, customerlong=longitude, timestamp=localtime)
 
         # remember which user has logged in
         session["user_id"] = result
@@ -552,7 +556,7 @@ def status():
     # db.execute("UPDATE customershistory SET status=:status_new WHERE meal=:meal",
     #           meal=meal_name, status_new="complete")
 
-    return render_template("cheforders.html")
+    return render_template("cheforders.html", data=orderedmeals)
 
 
 def errorhandler(e):
