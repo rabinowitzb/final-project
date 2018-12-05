@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required, usd
 
 # Configure application
-app = Flask(__name__)
+app = Flask(_name_)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -143,6 +143,9 @@ def buy():
     # make list into which we put names of meals clicked
     orderedmeals = []
 
+    # declare cart
+    cart = 0
+
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -166,24 +169,32 @@ def buy():
                                          name = (names[name]))
 
                 # append into orderedmeals
-                orderedmeals.append(mealdetails)
+                orderedmeals.append(mealdetails[0])
 
-        # for loop for all meals
+        # for loop to insert meals into cart
         for food in range(len(orderedmeals)):
 
             # insert row into cart table
             db.execute("INSERT INTO customerscart (id, meal, calories, price) VALUES (:user_id, :meal, :calories, :price)",
-                                user_id=current_user, meal=orderedmeals[food][0]['name'], calories=orderedmeals[food][0]['calories'], price=orderedmeals[food][0]['price'])
+                                user_id=current_user, meal=orderedmeals[food]['name'], calories=orderedmeals[food]['calories'], price=orderedmeals[food]['price'])
+
+            # define total price of meals in cart
+            cart = cart + orderedmeals[food]['price']
 
         # as long as orderedmeals is positive
         if len(orderedmeals) > 0:
 
-            # redirect to checkout
-            return redirect("/checkout")
+            # render cart template
+            return render_template("customercart.html", datas=orderedmeals, cart=usd(cart))
+
+        # if have no oredered meals
+        else:
+            return apology("must order meal", 403)
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("customercart.html", datas=orderedmeals)
+        return render_template("customercart.html", datas=orderedmeals, cart=usd(cart))
+
 
 @app.route("/checkout", methods=["GET", "POST"])
 @login_required
@@ -215,14 +226,8 @@ def checkout():
             # append into orderedmeals
             orderedmeals.append(mealdetails)
 
-            # declare cart
-            cart = 0
-
             # for loop for all meals
             for food in range(len(orderedmeals)):
-
-                # define total price of meals in cart
-                cart = cart + orderedmeals[food][0]['price']
 
                 # get location of all chefs
                 chef_coordinates = db.execute("SELECT (cheflat, cheflong, name) FROM chefs")
@@ -414,8 +419,8 @@ def chefregister():
         latitude = "64.22"
 
         # stores user info into database
-        result = db.execute("INSERT INTO chefs (username, name, password, cheflat, cheflong, cash) VALUES (:username, :name, :password, :cheflat, :cheflong, :cash)",
-                            username=username, name=name, password=hash_password, cheflat=latitude, cheflong=longitude, cash="0")
+        result = db.execute("INSERT INTO chefs (username, name, password, cheflat, cheflong) VALUES (:username, :name, :password, :cheflat, :cheflong)",
+                            username=username, name=name, password=hash_password, cheflat=latitude, cheflong=longitude)
 
         # remember which user has logged in
         session["user_id"] = result
@@ -556,7 +561,13 @@ def status():
     # db.execute("UPDATE customershistory SET status=:status_new WHERE meal=:meal",
     #           meal=meal_name, status_new="complete")
 
-    return render_template("cheforders.html", data=orderedmeals)
+    # # define total revenue chef has made
+    # total = db.execute("SELECT SUM(price) FROM cheforders WHERE id=:user_id",
+    #                      user_id=current_user)
+
+    # print(total)
+
+    # return render_template("cheforders.html", data=orderedmeals)
 
 
 def errorhandler(e):
@@ -567,4 +578,3 @@ def errorhandler(e):
 # listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
-
