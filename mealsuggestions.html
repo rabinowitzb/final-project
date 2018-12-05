@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Chef Orders
+    Meal Suggestions
 {% endblock %}
 
 {% block main %}
 
-
     <form action="/buy" method="post">
+
     <!-- head of table -->
     {% for meal in meals %}
     <p>
@@ -16,10 +16,11 @@
         <li>Meal name: {{ meal.name }}</li>
         <li>Price: {{ meal.price }}</li>
         <li>Calories: {{ meal.calories }}</li>
+        <li>Nuts: {{ meal.nuts }}</li>
+        <li>Dairy: {{ meal.dairy }}</li>
         <input type="checkbox" name="{{meal.name}}" value="{{meal.name}}">Add Meal to Cart<br>
     </ul>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit" required>Submit</button>
     </form>
-
-
-
 {% endblock %}
