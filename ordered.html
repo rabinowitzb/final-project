@@ -5,8 +5,9 @@
 {% endblock %}
 
 {% block main %}
+    {% for info in data %}
 <p>
-    Congratulations! You have successfully placed your HAMBRE order! Chef {{ chef username }} will deliver your {{ customer food items }}.
+    Congratulations! You have successfully placed your HAMBRE order! You can pickup your {{ info.meal }} from Chef {{ info.chef }} at {{ info.cheflat, info.cheflong }}.
 </p>
-
+    {% endfor %}
 {% endblock %}
