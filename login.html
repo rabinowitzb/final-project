@@ -15,12 +15,12 @@
             </p>
             <p>
                 <center>
-                    Founders<i>Gabe Apoj and Ben Rabinowitz</i>
+                    Founders<i> Gabe Apoj</i> and <i>Ben Rabinowitz</i>
                 </center>
             </p>
             <p>
             <!-- synopsis of HAMBRE -->
-            Founded in 2018, HAMBRE provides customized Kosher meal solutions to customers worldwide. We tailor our menu to specific diets and preferences. We look forward to connecting you with your chef. Enjoy!
+            Founded in 2018, HAMBRE provides customized Kosher meal solutions to customers throughout the United States. We tailor our menu to specific diets and preferences. We look forward to connecting you with your chef. Enjoy!
             </p>
         </header>
         <div class="form-group">
@@ -29,6 +29,44 @@
         <div class="form-group">
             <input class="form-control" name="password" placeholder="Password" type="password">
         </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
+          <div class="form-group">
+        <p>
+        <div class="form-check">
+          <input class="form-check-input"  type="hidden" name="geolcation" id="geolocation" value="" required>
+          <button href="#" onclick="starter()">
+          <label class="form-check-label" for="invalidCheck">
+            Agree to share location
+          </label>
+          <div class="invalid-feedback">
+            You must agree before submitting.
+          </div>
+        </div>
+        </p>
+        <p>
+            <button class="btn btn-primary" type="submit">Log In</button>
+        </p>
+        <p>
+            <img src = "../static/img/icon.png" class = "img-fluid" alt = "Responsive image"/>
+        </p>
     </form>
 {% endblock %}
+
+<script>
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>
