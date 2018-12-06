@@ -201,9 +201,6 @@ def checkout():
     # define current user
     current_user = session["user_id"]
 
-    # define checkout
-    checkout = request.form.get("checkout")
-
     # declare cartmeals
     cartmeals = []
 
@@ -212,6 +209,13 @@ def checkout():
 
         # declare names
         names = []
+
+        # get location of all chefs
+        chef = db.execute("SELECT cheflat, cheflong, id, name FROM chefs")
+
+        # get location of customer
+        customer = db.execute("SELECT customerlat, customerlong, id FROM customers WHERE id=:user_id",
+                              user_id=current_user)
 
         # start for loop for each row
         for row in orderedmeals:
@@ -223,7 +227,7 @@ def checkout():
         for name in range(len(names)):
 
             # if checkout is clicked
-            if request.form.get(names[checkout]) != None:
+            if request.form.get("checkout") != None:
 
                 # get all details of meals
                 mealdetails = db.execute("SELECT * FROM customerscart WHERE meal=:name",
@@ -232,53 +236,51 @@ def checkout():
                 # append into cartmeals
                 cartmeals.append(mealdetails[0])
 
-                # for loop for all meals
-                for food in range(len(cartmeals)):
+        # for loop for all meals
+        for food in range(len(cartmeals)):
 
-                    # get location of all chefs
-                    chef_coordinates = db.execute("SELECT (cheflat, cheflong, name) FROM chefs")
+            # function which finds distance of chef to user
+            def distance(chefs):
+                latitude = ((chefs["cheflat"]-customer[0]["customerlat"])**2)
+                longitude = ((chefs["cheflong"]-customer[0]["customerlong"])**2)
+                return(math.sqrt(latitude + longitude))
 
-                    # get location of customer
-                    customer = db.execute("SELECT (customerlat, customerlong, id) FROM customers WHERE id=:user_id",
-                                          user_id=current_user)
+            # sort chefs by distance to customer
+            all_chefs=sorted(chef, key=distance)
 
-                    # get location of chefs
-                    chef = db.execute("SELECT (cheflat, cheflong, id) FROM chefs")
+            # declare chefmeals list
+            chefmeals = []
 
-                    # function which finds distance of chef to user
-                    def distance(chef):
-                        return(math.sqrt(((chef["cheflat"]-customer["customerlat"])**2) + ((chef["cheflong"]-customer["customerlong"])**2)))
+            # add chef to chefmeals
+            chefmeals.append(all_chefs[0])
 
-                    # sort chefs by distance to customer
-                    all_chefs=sorted(chef_coordinates, key=distance)
+            # update chefs orders
+            db.execute("INSERT INTO chefsorders (id, customerid, meal, price, calories, status) VALUES (:chefid, :customerid, :meal, :price, :calories, :status)",
+                       chefid=all_chefs[0]["id"], customerid=customer[0]["id"], meal=cartmeals[food]['meal'], price=cartmeals[food]['price'], calories=cartmeals[food]['calories'], status="incomplete")
 
-                    # add chef to cartmeals
-                    cartmeals.append(all_chefs[0])
+            # insert transaction into customer history
+            db.execute("INSERT INTO customershistory (id, meal, price, chef, status) VALUES (:user_id, :meal, :price, :chef, :status)",
+                       user_id=current_user, meal=cartmeals[food]['meal'], price=cartmeals[food]['price'], chef=all_chefs[0]['name'], status="incomplete")
 
-                    # update chefs orders
-                    db.execute("INSERT INTO chefsorders (customer, meal, price, calories, status) VALUES (:customer, :meal, :price, :calories, :status)",
-                               customer=customer["id"], meal=cartmeals[food]['name'], price=cartmeals[food]['price'], calories=cartmeals[food]['calories'], status="incomplete")
+            # flash message
+            flash('Bought!')
 
-                    # insert transaction into customer history
-                    transaction = db.execute("INSERT INTO customershistory (id, meal, price, chef, status, mealid) VALUES (:user_id, :meal, :price, :chef, :status)",
-                                             user_id=current_user, meal=cartmeals[food]['name'], price=cartmeals[food]['price'], chef=all_chefs[0], status="incomplete")
+        # clear cart
+        db.execute("DELETE FROM customerscart WHERE id=:user_id",
+                    user_id=current_user)
 
-                    # flash message
-                    flash('Bought!')
+        # as long as orderedmeals is positive
+        if len(cartmeals) > 0:
 
-            # clear cart
-            db.execute("DELETE FROM customerscart WHERE id=:user_id",
-                       user_id=current_user)
+            # define length
+            length = len(cartmeals)
 
-            # as long as orderedmeals is positive
-            if len(cartmeals) > 0:
+            # render cart template
+            return render_template("ordered.html", cartmeals=cartmeals, chefmeals=chefmeals, length=length)
 
-                # render cart template
-                return render_template("ordered.html", data=cartmeals)
-
-            # if have no oredered meals
-            else:
-                return apology("must order meal", 403)
+        # if have no oredered meals
+        else:
+            return apology("must order meal", 403)
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -317,13 +319,33 @@ def login():
     # Chef reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
+        # define username
+        username = request.form.get("username")
+
+        # define password
+        password = request.form.get("password")
+
+        # define latitude
+        latitude = request.form.get("latitude")
+
+        # define longitude
+        longitude = request.form.get("longitude")
+
         # Ensure username was submitted
-        if not request.form.get("username"):
+        if not username:
             return apology("must provide username", 403)
 
         # Ensure password was submitted
-        elif not request.form.get("password"):
+        elif not password:
             return apology("must provide password", 403)
+
+        # Ensure latitude was submitted
+        elif not latitude:
+            return apology("must provide latitude, as a decimal", 403)
+
+        # Ensure longitude was submitted
+        elif not longitude:
+            return apology("must provide longitude, as a decimal", 403)
 
         # Query customers for username
         rows = db.execute("SELECT * FROM customers WHERE username=:username",
@@ -337,30 +359,26 @@ def login():
         if len(rows) != 1 and len(checks) != 1 and not check_password_hash(rows[0]["hash"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
-        # Remember which chef has logged in
-        session["user_id"] = rows[0]["id"]
-
-        # define location
-        # geolocation = request.form.get("geolocation")
-
-        # longitude = geolocation[0]
-        # latitude = geolocation[1]
-
-        longitude = "65.22"
-        latitude = "64.22"
-
         # Update databases and redirect to appropriate pages
         if len(rows) == 1:
             result = db.execute("UPDATE customers SET customerlat=:latitude, customerlong=:longitude WHERE username=:username",
                                 username=request.form.get("username"), latitude=latitude, longitude=longitude)
             # set proper type
             session["type"] = "customer"
+
+            # Remember which customer has logged in
+            session["user_id"] = rows[0]["id"]
+
             return redirect("/mealsuggestions")
         else:
             other = db.execute("UPDATE chefs SET cheflat=:latitude, cheflong=:longitude WHERE username=:username",
                                 username=request.form.get("username"), latitude=latitude, longitude=longitude)
             # set proper type
             session["type"] = "chef"
+
+            # Remember which chef has logged in
+            session["user_id"] = checks[0]["id"]
+
             return redirect("/status")
 
     # User reached route via GET (as by clicking a link or via redirect)
@@ -398,6 +416,12 @@ def chefregister():
         # define confirmation
         confirmation = request.form.get("confirmation")
 
+        # define latitude
+        latitude = request.form.get("latitude")
+
+        # define longitude
+        longitude = request.form.get("longitude")
+
         # Ensure username was submitted
         if not username:
             return apology("must provide username", 400)
@@ -418,6 +442,14 @@ def chefregister():
         elif password != confirmation:
             return apology("must retype correct password", 400)
 
+        # Ensure latitude was submitted
+        elif not latitude:
+            return apology("must provide latitude, as a decimal", 400)
+
+        # Ensure longitude was submitted
+        elif not longitude:
+            return apology("must provide longitude, as a decimal", 400)
+
         # Query database for username
         rows = db.execute("SELECT * FROM customers WHERE username=:username",
                           username=username)
@@ -432,12 +464,6 @@ def chefregister():
 
         # hash password
         hash_password = generate_password_hash(request.form.get("password"), method='pbkdf2:sha256', salt_length=8)
-
-        # define location
-        # geolocation = request.form.get("geolocation")
-
-        longitude = "65.22"
-        latitude = "64.22"
 
         # stores user info into database
         result = db.execute("INSERT INTO chefs (username, name, password, cheflat, cheflong) VALUES (:username, :name, :password, :cheflat, :cheflong)",
@@ -488,6 +514,12 @@ def customerregister():
         # define creditcard
         creditcard = request.form.get("creditcard")
 
+        # define latitude
+        latitude = request.form.get("latitude")
+
+        # define longitude
+        longitude = request.form.get("longitude")
+
         # Ensure username was submitted
         if not username:
             return apology("must provide username", 400)
@@ -512,6 +544,14 @@ def customerregister():
         elif len(creditcard) != 16:
             return apology("credit card must be 16 digits", 400)
 
+        # Ensure latitude was submitted
+        elif not latitude:
+            return apology("must provide latitude, as a decimal", 400)
+
+        # Ensure longitude was submitted
+        elif not longitude:
+            return apology("must provide longitude, as a decimal", 400)
+
         # Query database for username
         rows = db.execute("SELECT * FROM customers WHERE username=:username",
                           username=request.form.get("username"))
@@ -531,16 +571,10 @@ def customerregister():
         hash_creditcard = generate_password_hash(request.form.get("creditcard"), method='pbkdf2:sha256', salt_length=8)
 
 
-        # set timezone
+        # set timezone and local time
         tz = pytz.timezone(timezones)
         localtime = datetime.now(tz).strftime('%H:%M')
 
-
-        # define location
-        # geolocation = request.form.get("geolocation")
-
-        longitude = "59.99"
-        latitude = "60.12"
 
         # stores username into database
         result = db.execute("INSERT INTO customers (username, name, password, creditcard, mealplan, customerlat, customerlong, timestamp) VALUES (:username, :name, :password, :creditcard, :mealplan, :customerlat, :customerlong, :timestamp)",
@@ -563,6 +597,22 @@ def customerregister():
         return render_template("customerregister.html")
 
 
+@app.route("/cheforders", methods=["GET"])
+@login_required
+def cheforders():
+    """view all chef orders"""
+
+    # define current user
+    current_user = session["user_id"]
+
+    # select all chef orders
+    orders = db.execute("SELECT * FROM chefsorders WHERE id=:user_id",
+                        user_id=current_user)
+
+    # render template of chef orders
+    return render_template("cheforders.html", data=orders)
+
+
 @app.route("/status", methods=["GET", "POST"])
 @login_required
 def status():
@@ -571,24 +621,43 @@ def status():
     # define current user
     current_user = session["user_id"]
 
-    # # define meal_name
-    # meal_name=db.execute("SELECT * FROM chefsorders WHERE mealid=:mealid")
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
 
-    # # update chefsorders with status
-    # db.execute("UPDATE chefsorders SET status=:status_new WHERE mealid=:mealid",
-    #           mealid=meal_name, status_new="complete")
+        # for all parameters in cheforders
+        for meal in request.form.getlist("mealid"):
 
-    # # update customershistory with status
-    # db.execute("UPDATE customershistory SET status=:status_new WHERE meal=:meal",
-    #           meal=meal_name, status_new="complete")
+            # if meal is clicked
+            if request.form.getlist("mealid") != None:
 
-    # # define total revenue chef has made
-    # total = db.execute("SELECT SUM(price) FROM cheforders WHERE id=:user_id",
-    #                      user_id=current_user)
+                # define meal_name
+                meal_name=db.execute("SELECT * FROM chefsorders")
 
-    # print(total)
+                # update chefsorders with status
+                db.execute("UPDATE chefsorders SET status=:status_new WHERE mealid=:mealid",
+                           mealid=meal, status_new="complete")
 
-    # return render_template("cheforders.html", data=orderedmeals)
+                # update customershistory with status
+                db.execute("UPDATE customershistory SET status=:status_new WHERE mealid=:mealid",
+                           mealid=meal, status_new="complete")
+
+    # define total revenue chef has made
+    total = db.execute("SELECT SUM(price) FROM chefsorders WHERE id=:user_id AND status=:status",
+                       user_id=current_user, status="complete")
+
+    # query for chefsorders meals
+    chefsmeals = db.execute("SELECT * FROM chefsorders WHERE id=:user_id",
+                            user_id=current_user)
+
+    # if chefmeals is positive
+    if total[0]["SUM(price)"]:
+
+        # redirect to chefsorders page
+        return render_template("cheforders.html", data=chefsmeals, total=usd(total[0]["SUM(price)"]))
+
+    else:
+        # redirect to chefsorders page
+        return render_template("cheforders.html", data=chefsmeals, total="0")
 
 
 def errorhandler(e):
