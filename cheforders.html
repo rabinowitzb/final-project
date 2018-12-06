@@ -50,14 +50,14 @@
                     <!-- price -->
                     <td>{{ '{0:.2f}'.format(info.price) }}</td>
 
-                    <!-- status -->
-                    <!--<td>{{ info.status }}-->
-                    <!--    {{ if info.status == "incomplete"-->
-                    <!--</td>-->
+                     status
+                    <td>{{ info.status }}
+                        {{ if info.status == "incomplete"
+                    </td>
 
                     <!--{% if info.status %}-->
 
-                    <td><button class="btn btn-primary" type="submit">Complete Order</button></td>
+                    <td><button class="btn btn-primary" type="submit">Complete Orders</button></td>
                 </tr>
             {% endfor %}
         </tbody>
