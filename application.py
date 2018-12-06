@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required, usd
 
 # Configure application
-app = Flask(_name_)
+app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -140,9 +140,6 @@ def buy():
     # define current user
     current_user = session["user_id"]
 
-    # make list into which we put names of meals clicked
-    orderedmeals = []
-
     # declare cart
     cart = 0
 
@@ -204,6 +201,12 @@ def checkout():
     # define current user
     current_user = session["user_id"]
 
+    # define checkout
+    checkout = request.form.get("checkout")
+
+    # declare cartmeals
+    cartmeals = []
+
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -211,7 +214,7 @@ def checkout():
         names = []
 
         # start for loop for each row
-        for row in all_rows:
+        for row in orderedmeals:
 
             # add name of meals
             names.append(row['name'])
@@ -219,50 +222,68 @@ def checkout():
         # for ordered meals
         for name in range(len(names)):
 
-            # get all details of meals
-            mealdetails = db.execute("SELECT * FROM menu WHERE name=:name",
-                                     name = names[name])
+            # if checkout is clicked
+            if request.form.get(names[checkout]) != None:
 
-            # append into orderedmeals
-            orderedmeals.append(mealdetails)
+                # get all details of meals
+                mealdetails = db.execute("SELECT * FROM customerscart WHERE meal=:name",
+                                         name = names[name])
 
-            # for loop for all meals
-            for food in range(len(orderedmeals)):
+                # append into cartmeals
+                cartmeals.append(mealdetails[0])
 
-                # get location of all chefs
-                chef_coordinates = db.execute("SELECT (cheflat, cheflong, name) FROM chefs")
+                # for loop for all meals
+                for food in range(len(cartmeals)):
 
-                # get location of customer
-                customer = db.execute("SELECT (customerlat, customerlong, id) FROM customers WHERE id=:user_id",
-                                      user_id=current_user)
+                    # get location of all chefs
+                    chef_coordinates = db.execute("SELECT (cheflat, cheflong, name) FROM chefs")
 
-                # get location of chefs
-                chef = db.execute("SELECT (cheflat, cheflong, id) FROM chefs")
+                    # get location of customer
+                    customer = db.execute("SELECT (customerlat, customerlong, id) FROM customers WHERE id=:user_id",
+                                          user_id=current_user)
 
-                # function which finds distance of chef to user
-                def distance(chef):
-                    return(math.sqrt(((chef["cheflat"]-customer["customerlat"])**2) + ((chef["cheflong"]-customer["customerlong"])**2)))
+                    # get location of chefs
+                    chef = db.execute("SELECT (cheflat, cheflong, id) FROM chefs")
 
-                # sort chefs by distance to customer
-                all_chefs=sorted(chef_coordinates, key=distance)
+                    # function which finds distance of chef to user
+                    def distance(chef):
+                        return(math.sqrt(((chef["cheflat"]-customer["customerlat"])**2) + ((chef["cheflong"]-customer["customerlong"])**2)))
 
-                # update chefs orders
-                db.execute("INSERT INTO chefsorders (customer, meal, price, calories, status) VALUES (:customer, :meal, :price, :calories, :status)",
-                           customer=customer["id"], meal=orderedmeals[food][0]['name'], price=orderedmeals[food][0]['price'], calories=orderedmeals[food][0]['calories'], status="incomplete")
+                    # sort chefs by distance to customer
+                    all_chefs=sorted(chef_coordinates, key=distance)
 
-                # insert transaction into customer history
-                transaction = db.execute("INSERT INTO customershistory (id, meal, price, chef, status, mealid) VALUES (:user_id, :meal, :price, :chef, :status)",
-                                         user_id=current_user, meal=orderedmeals[food][0]['name'], price=orderedmeals[food][0]['price'], chef=all_chefs[0], status="incomplete")
+                    # add chef to cartmeals
+                    cartmeals.append(all_chefs[0])
 
-                # flash message
-                flash('Bought!')
+                    # update chefs orders
+                    db.execute("INSERT INTO chefsorders (customer, meal, price, calories, status) VALUES (:customer, :meal, :price, :calories, :status)",
+                               customer=customer["id"], meal=cartmeals[food]['name'], price=cartmeals[food]['price'], calories=cartmeals[food]['calories'], status="incomplete")
 
-        # clear cart
-        db.execute("DELETE FROM customerscart WHERE id=:user_id",
-                   user_id=current_user)
+                    # insert transaction into customer history
+                    transaction = db.execute("INSERT INTO customershistory (id, meal, price, chef, status, mealid) VALUES (:user_id, :meal, :price, :chef, :status)",
+                                             user_id=current_user, meal=cartmeals[food]['name'], price=cartmeals[food]['price'], chef=all_chefs[0], status="incomplete")
 
-    # render ordered template
-    return render_template("ordered.html", data=orderedmeals)
+                    # flash message
+                    flash('Bought!')
+
+            # clear cart
+            db.execute("DELETE FROM customerscart WHERE id=:user_id",
+                       user_id=current_user)
+
+            # as long as orderedmeals is positive
+            if len(cartmeals) > 0:
+
+                # render cart template
+                return render_template("ordered.html", data=cartmeals)
+
+            # if have no oredered meals
+            else:
+                return apology("must order meal", 403)
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("ordered.html", data=cartmeals)
+
 
 
 @app.route("/customerhistory")
@@ -578,3 +599,4 @@ def errorhandler(e):
 # listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
