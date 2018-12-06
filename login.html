@@ -5,12 +5,12 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/login" method="post">
+    <form action="/login" name="myform" id="myform" method="post">
         <header>
             <p>
                 <center>
                     <!-- image of founders -->
-                    <img src = "" class = "img-fluid" alt = "Responsive image"/>
+                    <img src = "../static/img/founders.png" class = "img-fluid" alt = "Responsive image" style = "width:40%" />
                 </center>
             </p>
             <p>
@@ -29,18 +29,17 @@
         <div class="form-group">
             <input class="form-control" name="password" placeholder="Password" type="password">
         </div>
-          <div class="form-group">
+        <div class="form-group">
         <p>
-        <div class="form-check">
-          <input class="form-check-input"  type="hidden" name="geolcation" id="geolocation" value="" required>
-          <button href="#" onclick="starter()">
-          <label class="form-check-label" for="invalidCheck">
-            Agree to share location
-          </label>
-          <div class="invalid-feedback">
-            You must agree before submitting.
+        <a href = "https://www.latlong.net/"> Get Your Coordinates </a>
+        </p>
+        <p>
+          <div class="form-group">
+            <input autocomplete="off" class="form-control" name="latitude" placeholder="Latitude (to two decimals)" type="text">
+            <input autocomplete="off" class="form-control" name="longitude" placeholder="Longitude (to two decimals)" type="text">
           </div>
         </div>
+        </p>
         </p>
         <p>
             <button class="btn btn-primary" type="submit">Log In</button>
@@ -49,24 +48,24 @@
             <img src = "../static/img/icon.png" class = "img-fluid" alt = "Responsive image"/>
         </p>
     </form>
-{% endblock %}
 
 <script>
-(function() {
-  'use strict';
-  window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
+document.querySelector('form').onsubmit = function(e) {
+        e.preventDefault();
+        if (!document.querySelector('input[name="username"]').value) {
+            alert('You must provide your name!');
+            return false;
         }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  }, false);
-})();
+        else if (!document.querySelector('input[name="password"]').value) {
+            alert('You must provide your password!');
+            return false;
+        }
+        else {
+            document.myform.submit();
+            return true;
+        }
+        };
 </script>
+
+{% endblock %}
+
