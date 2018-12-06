@@ -22,3 +22,4 @@ The meal is inserted into their cheforders table with an "incomplete" status. On
 (We further assume that all chefs can make all meals, and that they can theoretically have an infinite number of "incomplete" orders to make at a time.)
 
 Lastly, we assume that at least one chef and one customer will be registered with HAMBRE at any moment.
+ 
