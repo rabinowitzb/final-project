@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Chef Orders
+{% endblock %}
+
+{% block header %}
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+{% endblock %}
+
+{% block main %}
+    <form action="/status" method="post">
+
+    <!-- head of table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Customer ID</th>
+                <th scope="col">Meal</th>
+                <th scope="col">Calories</th>
+                <th scope="col">Price</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+
+        <!-- body of table -->
+        <tbody>
+            {% for info in data %}
+                <tr>
+                    <!-- customer id-->
+                    <td>{{ info.customerid }}</td>
+
+                    <!-- meal -->
+                    <td>{{ info.meal }}</td>
+
+                    <!-- calories -->
+                    <td>{{ info.calories }}</td>
+
+                    <!-- price -->
+                    <td>{{ info.price|usd }}</td>
+
+                    <!-- status -->
+                    <td>{{ info.status }}</td>
+                    <td>
+                        {% if info.status == "incomplete" %}
+                        <input type="checkbox" name="mealid" value="{{info.mealid}}">Complete Order<br>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+        <!-- footer of table with total cash of chef -->
+        <tfoot>
+            <tr>
+                <td colspan="0"><b>TOTAL REVENUE OF COMPLETED ORDERS</b></td>
+                <td colspan="2"></td>
+                <td><b>{{ total }}</b></td>
+            </tr>
+        </tfoot>
+    </table>
+    <button class="btn btn-primary" value="submit" name="submit" type="submit">Complete Orders</button>
+    </form>
+
+{% endblock %}

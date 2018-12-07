@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Customer History
+{% endblock %}
+
+{% block main %}
+
+    <!-- head of table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Chef</th>
+                <th scope="col">Meal</th>
+                <th scope="col">Price</th>
+                <th scope="col">Time of Order</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+
+        <!-- body of table -->
+        <tbody>
+            {% for info in data %}
+                <tr>
+
+                    <!-- chef -->
+                    <td>{{ info.chef }}</td>
+
+                    <!-- meal -->
+                    <td>{{ info.meal }}</td>
+
+                    <!-- price -->
+                    <td>{{ info.price|usd }}</td>
+
+                    <!-- time ordered -->
+                    <td>{{ info.timestamp }}</td>
+
+                    <!-- status -->
+                    <td>{{ info.status }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
