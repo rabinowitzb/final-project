@@ -262,8 +262,8 @@ def checkout():
             db.execute("INSERT INTO customershistory (id, meal, price, chef, status) VALUES (:user_id, :meal, :price, :chef, :status)",
                        user_id=current_user, meal=cartmeals[food]['meal'], price=cartmeals[food]['price'], chef=all_chefs[0]['name'], status="incomplete")
 
-            # flash message
-            flash('Bought!')
+        # flash message
+        flash('Bought!')
 
         # clear cart
         db.execute("DELETE FROM customerscart WHERE id=:user_id",
