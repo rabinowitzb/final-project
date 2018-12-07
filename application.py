@@ -262,12 +262,12 @@ def checkout():
             db.execute("INSERT INTO customershistory (id, meal, price, chef, status) VALUES (:user_id, :meal, :price, :chef, :status)",
                        user_id=current_user, meal=cartmeals[food]['meal'], price=cartmeals[food]['price'], chef=all_chefs[0]['name'], status="incomplete")
 
-        # flash message
-        flash('Bought!')
-
         # clear cart
         db.execute("DELETE FROM customerscart WHERE id=:user_id",
                    user_id=current_user)
+
+        # flash message
+        flash('Bought!')
 
         # as long as orderedmeals is positive
         if len(cartmeals) > 0:
@@ -285,6 +285,7 @@ def checkout():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("ordered.html", data=cartmeals)
+
 
 
 @app.route("/customerhistory")
@@ -352,7 +353,7 @@ def login():
 
         # Query chefs for username
         checks = db.execute("SELECT * FROM chefs WHERE username=:username",
-                            username=request.form.get("username"))
+                          username=request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 and len(checks) != 1 and not check_password_hash(rows[0]["hash"], request.form.get("password")):
@@ -369,7 +370,6 @@ def login():
             session["user_id"] = rows[0]["id"]
 
             return redirect("/mealsuggestions")
-
         else:
             other = db.execute("UPDATE chefs SET cheflat=:latitude, cheflong=:longitude WHERE username=:username",
                                username=request.form.get("username"), latitude=latitude, longitude=longitude)
@@ -456,7 +456,7 @@ def chefregister():
 
         # Query database for username
         checks = db.execute("SELECT * FROM chefs WHERE username=:username",
-                            username=username)
+                          username=username)
 
         # Ensure username can exist
         if len(rows) != 0 or len(checks) != 0:
@@ -570,9 +570,11 @@ def customerregister():
         # hash creditcard
         hash_creditcard = generate_password_hash(request.form.get("creditcard"), method='pbkdf2:sha256', salt_length=8)
 
+
         # set timezone and local time
         tz = pytz.timezone(timezones)
         localtime = datetime.now(tz).strftime('%H:%M')
+
 
         # stores username into database
         result = db.execute("INSERT INTO customers (username, name, password, creditcard, mealplan, customerlat, customerlong, timestamp) VALUES (:username, :name, :password, :creditcard, :mealplan, :customerlat, :customerlong, :timestamp)",
